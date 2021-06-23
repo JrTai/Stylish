@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>STYLiSH 2021</title>
+    <link rel="stylesheet" href="../css/reset.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link rel="stylesheet" href="../css/body.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js"></script>
+    <script src="../javascripts/common.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="flex-start">
+          <div id="logo-stylish">
+            <a href="/">
+              <img
+                src="../images/logo.png"
+                alt="STYLiSH Logo"
+                width="258"
+                height="48"
+              />
+            </a>
+          </div>
+          <div class="nav-categories">
+            <h3>女 裝</h3>
+            <hr class="category-break" />
+            <h3>男 裝</h3>
+            <hr class="category-break" />
+            <h3>配 件</h3>
+          </div>
+        </div>
+
+        <div class="flex-end">
+          <div><input id="search" /></div>
+          <div>
+            <a href="/cart.html">
+              <div class="icon-cart">
+                <div class="count">0</div>
+              </div>
+            </a>
+          </div>
+          <div>
+            <a href="/profile.html"><div class="icon-profile"></div></a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="flex-center-grey"></div>
+    </header>
+
+    <main></main>
+
+    <footer id="footer-profile">
+      <nav>
+        <ul>
+          <div>關於 Stylish</div>
+          <div>服務條款</div>
+          <div>隱私政策</div>
+          <div>聯絡我們</div>
+          <div>FAQ</div>
+        </ul>
+      </nav>
+      <div class="links">
+        <img src="./images/line.png" />
+        <img src="./images/twitter.png" />
+        <img src="./images/facebook.png" />
+      </div>
+      <div class="rights">© 2021. All rights reserved.</div>
+    </footer>
+  </body>
+
+  <script>
+    updateCartQty();
+    let access_token = localStorage.getItem("access_token");
+    if (access_token) {
+      showUserProfile();
+    } else {
+      showSignInAndUp();
+    }
+
+    function showUserProfile() {
+      $.ajax({
+        type: "GET",
+        url: "/api/1.0/user/profile",
+        headers: {
+          authorization: localStorage.getItem("access_token"),
+        },
+        success: function (r) {
+          console.log(r);
+          checkAdmin(r.data.email, r.data.picture, r.data.name);
+        },
+        error: function (e) {
+          console.log("some error:", e);
+          if (e.status === 401) {
+            alert("無Token!");
+            signOut();
+            window.location.href = "/profile.html";
+          }
+          if (e.status === 403) {
+            alert("Token過期囉，請重新登入!");
+            signOut();
+            window.location.href = "/profile.html";
+          }
+          if (e.status === 404) {
+            alert("無有效Token!");
+            signOut();
+            window.location.href = "/profile.html";
+          }
+        },
+      });
+    }
+
+    function checkAdmin(email, picURL, name) {
+      $.ajax({
+        type: "POST",
+        url: "/api/1.0/user/checkAdmin",
+        data: JSON.stringify({ email: email }),
+        contentType: "application/json",
+        success: function (admin) {
+          let adminResult = JSON.parse(admin);
+
+          let pictureURL;
+          if (picURL) {
+            pictureURL = picURL;
+          } else {
+            pictureURL = "../images/Ging_Freecss.jpeg";
+          }
+
+          if (adminResult.isAdmin) {
+            let main = document.querySelector(`main`);
+            let profileInfo = `<div class="flex-center">
+             <section class="content" id="content-profile">
+               <img id="content-pic"
+                 src=${pictureURL}
+                 alt="Ging Freecss"
+                 width="176"
+                 height="98"
+               /><br><br>
+               哈囉 ${name} 歡迎光臨！<br><br>您的帳號：${email} <br><br>
+               <button type="button" onclick="signOut()" id="signOutButton">登出</button>
+               <br>
+                  <button type="button" onclick="adminProduct()" class="admin-button">管理產品</button>
+                  <button type="button" onclick="adminCampaign()" class="admin-button">管理促銷</button>
+             </section>
+            </div>`;
+            main.insertAdjacentHTML("afterbegin", profileInfo);
+            localStorage.setItem("adminEmail", adminResult.email);
+          } else {
+            let main = document.querySelector(`main`);
+            let profileInfo = `<div class="flex-center">
+             <section class="content" id="content-profile">
+               <img id="content-pic"
+                 src=${pictureURL}
+                 alt="Ging Freecss"
+                 width="176"
+                 height="98"
+               /><br><br>
+               哈囉 ${name} 歡迎光臨！<br><br>您的帳號：${email} <br><br>
+               <button type="button" onclick="signOut()" id="signOutButton">登出</button>
+             </section>
+            </div>`;
+            main.insertAdjacentHTML("afterbegin", profileInfo);
+          }
+        },
+        error: function (e) {
+          console.log("some error:", e.responseText);
+        },
+      });
+    }
+
+    function adminProduct() {
+      $("body").load(
+        "/admin/product.html",
+        `adminEmail=${localStorage.getItem("adminEmail")}`
+      );
+    }
+
+    function adminCampaign() {
+      $("body").load(
+        "/admin/campaign.html",
+        `adminEmail=${localStorage.getItem("adminEmail")}`
+      );
+    }
+
+    function signOut() {
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("adminEmail");
+      window.location.href = "/profile.html";
+    }
+
+    function showSignInAndUp() {
+      let main = document.querySelector(`main`);
+      let signUpForm = `<div class="flex-center">
+             <section class="content" id="content-profile">
+              <form id="signUpAndInForm" name="signUpAndInForm">
+                <label for="userName">Name:</label><br />
+                  <input
+                    type="text"
+                    id="userName"
+                    name="userName"
+                    onkeyup="checkform()"
+                  /><br />
+                  <br />
+                  <label for="email">Email:</label><br />
+                  <input
+                    type="text"
+                    id="email"
+                    name="email"
+                    onkeyup="checkform()"
+                  /><br /><br />
+                  <label for="password">Password:</label><br />
+                  <input
+                    type="text"
+                    id="password"
+                    name="password"
+                    onkeyup="checkform()"
+                  /><br /><br />
+                  <input
+                    id="signUpButton"
+                    name="signUpButton"
+                    type="button"
+                    value="Sign Up"
+                    onclick="signUpUser()"
+                    disabled="disabled"
+                  />
+                  <input
+                    id="signInButton"
+                    name="signInButton"
+                    type="button"
+                    value="Sign In"
+                    onclick="signInUser()"
+                    disabled="disabled"
+                  />
+                </form>
+              </section>
+            </div>`;
+      main.insertAdjacentHTML("afterbegin", signUpForm);
+    }
+
+    function checkform() {
+      var f = document.forms["signUpAndInForm"].elements;
+      var canSignUp = true;
+      var canSignIn = true;
+
+      for (var i = 0; i < f.length; i++) {
+        if (f[i].value.length == 0) canSignUp = false;
+      }
+
+      for (var i = 1; i < f.length; i++) {
+        if (f[i].value.length == 0) canSignIn = false;
+      }
+
+      document.getElementById("signUpButton").disabled = !canSignUp;
+      document.getElementById("signInButton").disabled = !canSignIn;
+    }
+
+    function validateEmail(email) {
+      const re = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+      return re.test(String(email).toLowerCase());
+    }
+
+    function signUpUser() {
+      if (!validateEmail(document.querySelector("#email").value)) {
+        alert("請輸入有效的email!");
+        return;
+      }
+
+      let userData = {
+        name: document.querySelector("#userName").value,
+        email: document.querySelector("#email").value,
+        password: document.querySelector("#password").value,
+      };
+
+      $.ajax({
+        type: "POST",
+        url: "/api/1.0/user/signup",
+        data: JSON.stringify(userData),
+        contentType: "application/json",
+        success: function (r) {
+          window.localStorage.setItem("access_token", r.data.access_token);
+          window.location.href = "/profile.html";
+        },
+        error: function (e) {
+          console.log("some error:", e.responseText);
+          if (e.status === 403) {
+            alert("Email信箱註冊過囉！");
+          }
+        },
+      });
+    }
+
+    function signInUser() {
+      if (!validateEmail(document.querySelector("#email").value)) {
+        alert("請輸入有效的email!");
+        return;
+      }
+
+      let userData = {
+        email: document.querySelector("#email").value,
+        password: document.querySelector("#password").value,
+      };
+
+      $.ajax({
+        type: "POST",
+        url: "/api/1.0/user/signin",
+        data: JSON.stringify(userData),
+        contentType: "application/json",
+        success: function (r) {
+          window.localStorage.setItem("access_token", r.data.access_token);
+          window.location.href = "/profile.html";
+        },
+        error: function (e) {
+          console.log("some error:", e.responseText);
+          if (e.status === 403) {
+            alert("Email信箱不存在喔！");
+          } else if (e.status === 404) {
+            alert("FB Toekn 無效喔！");
+          } else if (e.status === 405) {
+            alert("密碼錯誤！");
+          }
+        },
+      });
+    }
+  </script>
+</html>

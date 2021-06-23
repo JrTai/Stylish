@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <script
+      text="text/javascript"
+      src="https://js.tappaysdk.com/tpdirect/v2_2_1"
+    ></script>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <title>Connect payment with TapPay</title>
+    <style>
+      form {
+        width: 480px;
+        margin: 20px auto;
+      }
+    </style>
+  </head>
+
+  <body>
+    <label for="name">Name:</label>
+    <input type="text" id="name" name="name" /><br />
+
+    <label for="email">Email:</label>
+    <input type="text" id="email" name="email" /><br />
+
+    <label for="phone">Phone:</label>
+    <input type="text" id="phone" name="phone" /><br />
+
+    <label for="address">Address:</label>
+    <input type="text" id="address" name="address" /><br />
+
+    <label for="delivery_time">Delivery Time:</label>
+    <select id="delivery_time" name="delivery_time">
+      <option value="Morning">Morning</option>
+      <option value="Afternoon">Afternoon</option>
+      <option value="Not Specify">Not Speficy</option></select
+    ><br />
+
+    <label>Card Info</label>
+    <div id="cardview-container"></div>
+    <button id="submit-button" onclick="onClick()">Confirm Payment</button>
+    <pre id="result1"></pre>
+    <pre id="result2"></pre>
+
+    <script>
+      let APP_ID = 12348;
+      let APP_KEY =
+        "app_pa1pQcKoY22IlnSXq5m5WP5jFKzoRG58VEXpT7wU62ud7mMbDOGzCYIlzzLF";
+
+      TPDirect.setupSDK(APP_ID, APP_KEY, "sandbox");
+      TPDirect.card.setup("#cardview-container");
+
+      function onClick() {
+        TPDirect.card.getPrime(function (result) {
+          if (result.status !== 0) {
+            console.log("getPrime 錯誤");
+            return;
+          }
+          alert("getPrime 成功");
+          var prime = result.card.prime;
+          console.log(prime);
+          document.querySelector("#result1").innerHTML = JSON.stringify(
+            result,
+            null,
+            4
+          );
+
+          let orderData = {
+            prime: prime,
+            order: {
+              shipping: "delivery",
+              payment: "credit_card",
+              subtotal: 1234,
+              freight: 14,
+              total: 1300,
+              recipient: {
+                name: document.querySelector("#name").value,
+                phone: document.querySelector("#phone").value,
+                email: document.querySelector("#email").value,
+                address: document.querySelector("#address").value,
+                time: document.querySelector("#delivery_time").value,
+              },
+              list: [
+                {
+                  id: "201807202157",
+                  name: "活力花紋長筒牛仔褲_1",
+                  price: 1299,
+                  color: {
+                    code: "DDF0FF",
+                    name: "淺藍",
+                  },
+                  size: "M",
+                  qty: 1,
+                },
+                {
+                  id: "201807202158",
+                  name: "活力花紋長筒牛仔褲_2",
+                  price: 1500,
+                  color: {
+                    code: "DDF0FF",
+                    name: "淺藍",
+                  },
+                  size: "S",
+                  qty: 5,
+                },
+              ],
+            },
+          };
+
+          $.ajax({
+            type: "POST",
+            url: "/api/1.0/order/checkout",
+            data: JSON.stringify(orderData),
+            contentType: "application/json",
+            headers: {
+              authorization: window.localStorage.getItem("access_token"),
+            },
+            success: function (r) {
+              console.log(r);
+              alert("付款成功");
+              document.querySelector("#result2").innerHTML = JSON.stringify(
+                r,
+                null,
+                4
+              );
+            },
+            error: function (e) {
+              console.log("some error:", e);
+              if (e.status === 401) {
+                let div = document.createElement("div");
+                div.innerHTML = `<p>No Valid Token!</p>`;
+                document.querySelector("body").appendChild(div);
+              }
+            },
+          });
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>STYLiSH 2021</title>
+    <link rel="stylesheet" href="../css/reset.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link rel="stylesheet" href="../css/body.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js"></script>
+    <script src="../javascripts/common.js" type="text/javascript"></script>
+    <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="flex-start">
+          <div id="logo-stylish">
+            <a href="/">
+              <img
+                src="../images/logo.png"
+                alt="STYLiSH Logo"
+                width="258"
+                height="48"
+              />
+            </a>
+          </div>
+          <div class="nav-categories">
+            <h3>女 裝</h3>
+            <hr class="category-break" />
+            <h3>男 裝</h3>
+            <hr class="category-break" />
+            <h3>配 件</h3>
+          </div>
+        </div>
+
+        <div class="flex-end">
+          <div><input id="search" /></div>
+          <div>
+            <a href="/cart.html">
+              <div class="icon-cart">
+                <div class="count">0</div>
+              </div>
+            </a>
+          </div>
+          <div>
+            <a href="/profile.html"><div class="icon-profile"></div></a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="flex-center-grey"></div>
+    </header>
+
+    <main>
+      <div class="flex-center">
+        <section class="dashboard-content" id="content-1"></section>
+        <section class="dashboard-content" id="content-2"></section>
+        <section class="dashboard-content" id="content-3"></section>
+        <section class="dashboard-content" id="content-4"></section>
+      </div>
+    </main>
+
+    <footer>
+      <nav>
+        <ul>
+          <div>關於 Stylish</div>
+          <div>服務條款</div>
+          <div>隱私政策</div>
+          <div>聯絡我們</div>
+          <div>FAQ</div>
+        </ul>
+      </nav>
+      <div class="links">
+        <img src="https://stylish-henry.tw/images/line.png" />
+        <img src="https://stylish-henry.tw/images/twitter.png" />
+        <img src="https://stylish-henry.tw/images/facebook.png" />
+      </div>
+      <div class="rights">© 2021. All rights reserved.</div>
+    </footer>
+  </body>
+
+  <script>
+    updateCartQty();
+    refresh();
+
+    const socket = io();
+
+    socket.emit("dashboard", "socket dahsboard connect")
+    socket.on("refresh", (msg) => {
+      console.log(msg);
+      $('#number').remove()
+      refresh();
+    });
+
+    function refresh() {
+      $.ajax({
+        type: "GET",
+        url: "/api/1.0/order/dashboard/total",
+        success: function (r) {
+          let section = document.querySelector(`#content-1`);
+          let eachProduct = `<div id="number"><br>Total Revenue:<br><br><br> ${r.total}</div>`;
+          section.insertAdjacentHTML("afterbegin", eachProduct);
+        },
+        error: function (e) {
+          console.log("some error:", e);
+        },
+      });
+
+      $.ajax({
+        type: "GET",
+        url: "/api/1.0/order/dashboard/pieChart",
+        success: function (r) {
+          let sold = [];
+          let colorName = [];
+          let color = [];
+          for (let item of r.data) {
+            sold.push(item.sold);
+            colorName.push(item.color);
+            color.push(item.colorCode);
+          }
+          let data = [
+            {
+              values: sold,
+              labels: colorName,
+              type: "pie",
+              marker: {
+                colors: color,
+              },
+            },
+          ];
+          let layout = {
+            height: 350,
+            width: 500,
+            title: {
+              text: "Product Sold Percentage in Different Colors",
+              font: {
+                family: "Times New Roman",
+                size: 24,
+              },
+            },
+          };
+          let section = document.querySelector(`#content-2`);
+          Plotly.newPlot(section, data, layout);
+        },
+        error: function (e) {
+          console.log("some error:", e);
+        },
+      });
+
+      $.ajax({
+        type: "GET",
+        url: "/api/1.0/order/dashboard/histogram",
+        success: function (r) {
+          let trace = {
+            x: r.data,
+            type: "histogram",
+          };
+          let data = [trace];
+          let layout = {
+            height: 350,
+            width: 500,
+            title: {
+              text: "Product Sold Quantity in Different Price Range",
+              font: {
+                family: "Times New Roman",
+                size: 24,
+              },
+            },
+          };
+          let section = document.querySelector(`#content-3`);
+          Plotly.newPlot(section, data, layout);
+        },
+        error: function (e) {
+          console.log("some error:", e);
+        },
+      });
+
+      $.ajax({
+        type: "GET",
+        url: "/api/1.0/order/dashboard/barChart",
+        success: function (r) {
+          let trace1 = {
+            x: r.order,
+            y: [],
+            name: "S",
+            type: "bar",
+          };
+
+          let trace2 = {
+            x: r.order,
+            y: [],
+            name: "M",
+            type: "bar",
+          };
+
+          let trace3 = {
+            x: r.order,
+            y: [],
+            name: "L",
+            type: "bar",
+          };
+
+          for (product of r.order) {
+            trace1.y.push(r.data[product]["S"]);
+            trace2.y.push(r.data[product]["M"]);
+            trace3.y.push(r.data[product]["L"]);
+          }
+
+          let data = [trace1, trace2, trace3];
+
+          let layout = {
+            height: 350,
+            width: 500,
+            title: {
+              text: "Quantity of top 5 Sold Products in Different Sizes",
+              font: {
+                family: "Times New Roman",
+                size: 24,
+              },
+            },
+            barmode: "stack",
+          };
+          let section = document.querySelector(`#content-4`);
+          Plotly.newPlot(section, data, layout);
+        },
+        error: function (e) {
+          console.log("some error:", e);
+        },
+      });
+    }
+  </script>
+</html>

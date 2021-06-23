@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>STYLiSH 2021</title>
+    <link rel="stylesheet" href="../css/reset.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link rel="stylesheet" href="../css/body.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js"></script>
+    <script src="../javascripts/common.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="flex-start">
+          <div id="logo-stylish">
+            <a href="/">
+              <img
+                src="../images/logo.png"
+                alt="STYLiSH Logo"
+                width="258"
+                height="48"
+              />
+            </a>
+          </div>
+          <div class="nav-categories">
+            <h3>女 裝</h3>
+            <hr class="category-break" />
+            <h3>男 裝</h3>
+            <hr class="category-break" />
+            <h3>配 件</h3>
+          </div>
+        </div>
+
+        <div class="flex-end">
+          <div><input id="search" /></div>
+          <div>
+            <a href="/cart.html">
+              <div class="icon-cart">
+                <div class="count">0</div>
+              </div>
+            </a>
+          </div>
+          <div>
+            <a href="/profile.html"><div class="icon-profile"></div></a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="flex-center-grey"></div>
+    </header>
+
+    <main>
+      <div class="flex-center-campaign">
+        <h1 class="campaign-story">
+          永遠
+          展現自信與專業
+          無法抵擋的男人魅力。
+          復古《再一次經典》
+        </h1>
+      </div>
+
+      <div class="flex-center">
+        <section class="content" id="content-1"></section>
+        <section class="content" id="content-2"></section>
+        <section class="content" id="content-3"></section>
+        <section class="content" id="content-4"></section>
+        <section class="content" id="content-5"></section>
+        <section class="content" id="content-6"></section>
+      </div>
+    </main>
+
+    <footer>
+      <nav>
+        <ul>
+          <div>關於 Stylish</div>
+          <div>服務條款</div>
+          <div>隱私政策</div>
+          <div>聯絡我們</div>
+          <div>FAQ</div>
+        </ul>
+      </nav>
+      <div class="links">
+        <img src="./images/line.png" />
+        <img src="./images/twitter.png" />
+        <img src="./images/facebook.png" />
+      </div>
+      <div class="rights">© 2021. All rights reserved.</div>
+    </footer>
+  </body>
+
+  <script>
+    updateCartQty();
+
+    $.ajax({
+      type: "GET",
+      url: "/api/1.0/products/all",
+      success: function (r) {
+        let json = JSON.parse(r);
+        let index = 1;
+        json.data.forEach((product) => {
+          let section = document.querySelector(`#content-${index}`);
+          let eachProduct = `<a class="product" href="/product.html?id=${product.id}">
+                <img
+                  src="/pics/${product.main_image}.jpg"
+                />
+                <div class="product-colors" id='product-colors-${index}'>
+                </div>
+                <div class="product-title">${product.title}</div>
+                <div class="product-price">TWD.${product.price}</div>
+              </a>`;
+          section.insertAdjacentHTML("afterbegin", eachProduct);
+
+          // create color div then append
+          product.colors.forEach((color) => {
+            let colors = document.querySelector(`#product-colors-${index}`);
+            let eachColor = `<div
+                    class="product-color"
+                    style="background-color: #${color.code}"
+                  ></div>`;
+            colors.insertAdjacentHTML("afterbegin", eachColor);
+          });
+          index += 1;
+        });
+      },
+      error: function (e) {
+        console.log("some error:", e);
+      },
+    });
+  </script>
+</html>

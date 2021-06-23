@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../css/reset.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link rel="stylesheet" href="../css/body.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js"></script>
+    <script src="../javascripts/common.js" type="text/javascript"></script>
+    <title>Admin Product</title>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="flex-start">
+          <div id="logo-stylish">
+            <a href="/">
+              <img
+                src="../images/logo.png"
+                alt="STYLiSH Logo"
+                width="258"
+                height="48"
+              />
+            </a>
+          </div>
+          <div class="nav-categories">
+            <h3>女 裝</h3>
+            <hr class="category-break" />
+            <h3>男 裝</h3>
+            <hr class="category-break" />
+            <h3>配 件</h3>
+          </div>
+        </div>
+
+        <div class="flex-end">
+          <div><input id="search" /></div>
+          <div>
+            <a href="/cart.html">
+              <div class="icon-cart">
+                <div class="count">0</div>
+              </div>
+            </a>
+          </div>
+          <div>
+            <a href="/profile.html"><div class="icon-profile"></div></a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="flex-center-grey"></div>
+    </header>
+    <mail>
+      <div class="flex-center">
+        <section class="content" id="content-product-admin">
+          <h1>Admin Product Page</h1>
+          <h2>Create New Product To Inventory</h2>
+          <br />
+
+          <form
+            id="productForm"
+            name="productForm"
+            action=""
+            method="POST"
+            enctype="multipart/form-data"
+          >
+            <label for="productId">productId:</label>
+            <input
+              type="number"
+              id="productId"
+              name="productId"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="category">category:</label>
+            <select id="category" name="category" onkeyup="checkform()">
+              <option value="Women">Women</option>
+              <option value="Men">Men</option>
+              <option value="Accessories">Accessories</option></select
+            ><br />
+
+            <label for="title">title:</label>
+            <input
+              type="text"
+              id="title"
+              name="title"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="quantity">quantity:</label>
+            <input
+              type="number"
+              id="quantity"
+              name="quantity"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="description">description:</label>
+            <input
+              type="text"
+              id="description"
+              name="description"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="price">price:</label>
+            <input
+              type="number"
+              id="price"
+              name="price"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="texture">texture:</label>
+            <input
+              type="text"
+              id="texture"
+              name="texture"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="wash">wash:</label>
+            <input
+              type="text"
+              id="wash"
+              name="wash"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="place">place:</label>
+            <input
+              type="text"
+              id="place"
+              name="place"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="note">note:</label>
+            <input
+              type="text"
+              id="note"
+              name="note"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="story">story:</label>
+            <input
+              type="text"
+              id="story"
+              name="story"
+              onKeyup="checkform()"
+            /><br />
+
+            <label for="color">color:</label>
+            <select id="color" name="color" onkeyup="checkform()">
+              <option value="White">White</option>
+              <option value="Pink">Pink</option>
+              <option value="Green">Green</option>
+              <option value="Blue">Blue</option>
+              <option value="Grey">Grey</option>
+              <option value="Brown">Brown</option>
+              <option value="DarkBlue">DarkBlue</option></select
+            ><br />
+
+            <label for="size">size:</label>
+            <select id="size" name="size" onkeyup="checkform()">
+              <option value="S">S</option>
+              <option value="M">M</option>
+              <option value="L">L</option>
+              <option value="XL">XL</option>
+              <option value="F">F</option></select
+            ><br />
+
+            <br />
+            <label for="main_image">select main product picture:</label>
+            <input type="file" name="main_image" /><br />
+
+            <br />
+            <label for="other_image_1">select other product picture 1:</label>
+            <input type="file" name="other_image_1" /><br />
+
+            <br />
+            <label for="other_image_2">select other product picture 2:</label>
+            <input type="file" name="other_image_2" /><br />
+
+            <br />
+            <label for="other_image_3">select other product picture 3:</label>
+            <input type="file" name="other_image_3" /><br />
+
+            <br />
+            <label for="other_image_4">select other product picture 4:</label>
+            <input type="file" name="other_image_4" /><br />
+
+            <br />
+            <input
+              id="productSubmit"
+              name="productSubmit"
+              type="button"
+              value="Add New Product to Inventory"
+              onclick="check_product_id_exist()"
+              disabled="disabled"
+            />
+
+            <input
+              id="productAddVariant"
+              name="productAddVariant"
+              type="button"
+              value="Add/Update Stock Variant to Existing Product"
+              onclick="insert_to_variant_check_id()"
+              disabled="disabled"
+            />
+          </form>
+          <br />
+          <button type="button" onclick="backToProfile()" id="signOutButton">
+            回個人頁面
+          </button>
+          <br /><br />
+        </section>
+        <section class="content" id="creat-result"></section>
+      </div>
+    </mail>
+
+    <footer>
+      <nav>
+        <ul>
+          <div>關於 Stylish</div>
+          <div>服務條款</div>
+          <div>隱私政策</div>
+          <div>聯絡我們</div>
+          <div>FAQ</div>
+        </ul>
+      </nav>
+      <div class="links">
+        <img src="./images/line.png" />
+        <img src="./images/twitter.png" />
+        <img src="./images/facebook.png" />
+      </div>
+      <div class="rights">© 2021. All rights reserved.</div>
+    </footer>
+
+    <script>
+      function backToProfile() {
+        window.location.href = "/profile.html";
+      }
+
+      function checkform() {
+        var f = document.forms["productForm"].elements;
+        var canAddToInventor = true;
+        var canAddStockVariant = true;
+
+        for (var i = 0; i < f.length; i++) {
+          if (f[i].value.length == 0) canAddToInventor = false;
+        }
+
+        // for (var i = 0; i < f.length - 7; i++) {
+        //   if (f[i].value.length == 0) canAddStockVariant = false;
+        // }
+
+        if (f[0].value.length == 0) canAddStockVariant = false;
+        if (f[3].value.length == 0) canAddStockVariant = false;
+        if (f[11].value.length == 0) canAddStockVariant = false;
+        if (f[12].value.length == 0) canAddStockVariant = false;
+
+        document.getElementById("productSubmit").disabled = !canAddToInventor;
+        document.getElementById(
+          "productAddVariant"
+        ).disabled = !canAddStockVariant;
+      }
+
+      $(document).ready(function () {
+        $("input:file").change(function () {
+          if ($(this).val()) {
+            $("input:button").attr("disabled", false);
+            checkform();
+            // or, as has been pointed out elsewhere:
+            // $('input:submit').removeAttr('disabled');
+          }
+        });
+      });
+
+      function insert_to_variant_check_id() {
+        let productData = {
+          product_ID: document.querySelector("#productId").value,
+        };
+
+        $.ajax({
+          type: "POST",
+          url: "/check_id",
+          data: productData,
+          success: function (r) {
+            console.log(r);
+            if (r === "Product_ID exist") {
+              insertToVariant();
+            } else {
+              // append error message
+              let div = document.createElement("div");
+              div.innerHTML = `<p>Product_ID not exist!</p>`;
+              document.querySelector("#creat-result").appendChild(div);
+            }
+          },
+          error: function (e) {
+            console.log("some error:", e);
+          },
+        });
+      }
+
+      function insertToVariant() {
+        let productData = {
+          product_ID: document.querySelector("#productId").value,
+          quantity: document.querySelector("#quantity").value,
+          color: document.querySelector("#color").value,
+          size: document.querySelector("#size").value,
+        };
+
+        $.ajax({
+          type: "POST",
+          url: "/insertVariant",
+          data: productData,
+          success: function (r) {
+            console.log("result:", r);
+            if (r === "variant exist, update variant") {
+              let div = document.createElement("div");
+              div.innerHTML = `<p>Product Update Stock Variant!</p>`;
+              document.querySelector("#creat-result").appendChild(div);
+            } else {
+              let div = document.createElement("div");
+              div.innerHTML = `<p>Product Add New Stock Variant!</p>`;
+              document.querySelector("#creat-result").appendChild(div);
+            }
+          },
+          error: function (e) {
+            console.log("some error:", e);
+          },
+        });
+      }
+
+      function insertProductToInventory(arr) {
+        let productData = {
+          mainImg: arr[0],
+          otherImg1: arr[1],
+          otherImg2: arr[2],
+          otherImg3: arr[3],
+          otherImg4: arr[4],
+          product_ID: document.querySelector("#productId").value,
+          category: document.querySelector("#category").value,
+          title: document.querySelector("#title").value,
+          quantity: document.querySelector("#quantity").value,
+          description: document.querySelector("#description").value,
+          price: document.querySelector("#price").value,
+          texture: document.querySelector("#texture").value,
+          wash: document.querySelector("#wash").value,
+          place: document.querySelector("#place").value,
+          note: document.querySelector("#note").value,
+          story: document.querySelector("#story").value,
+          color: document.querySelector("#color").value,
+          size: document.querySelector("#size").value,
+        };
+
+        $.ajax({
+          type: "POST",
+          url: "/insertProduct",
+          data: productData,
+          success: function (r) {
+            console.log("result:", r);
+            let div = document.createElement("div");
+            div.innerHTML = `<p>Product Add to Inventory!</p>`;
+            document.querySelector("#creat-result").appendChild(div);
+          },
+          error: function (e) {
+            console.log("some error:", e);
+          },
+        });
+      }
+
+      function check_product_id_exist() {
+        let productData = {
+          product_ID: document.querySelector("#productId").value,
+        };
+
+        $.ajax({
+          type: "POST",
+          url: "/check_id",
+          data: productData,
+          success: function (r) {
+            console.log(r);
+            if (r === "Product_ID do not exist, will create Prodcut ID") {
+              photoUpload();
+            } else {
+              // append error message
+              let div = document.createElement("div");
+              div.innerHTML = `<p>Product_ID duplicated!</p>`;
+              document.querySelector("#creat-result").appendChild(div);
+            }
+          },
+          error: function (e) {
+            console.log("some error:", e);
+          },
+        });
+      }
+
+      function photoUpload() {
+        var productPhoto = new FormData(document.querySelector("#productForm"));
+        $.ajax({
+          type: "POST",
+          url: "/uploadPhoto",
+          data: productPhoto,
+          processData: false,
+          contentType: false,
+          success: function (arr) {
+            console.log("product image id array :", arr);
+            insertProductToInventory(arr);
+          },
+          error: function (e) {
+            console.log("some error:", e);
+          },
+        });
+      }
+    </script>
+  </body>
+</html>

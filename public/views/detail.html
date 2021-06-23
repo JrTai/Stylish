@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8" />
+    <title>STYLiSH 2021</title>
+    <link rel="stylesheet" href="../css/reset.css" />
+    <link rel="stylesheet" href="../css/header.css" />
+    <link rel="stylesheet" href="../css/detail.css" />
+    <link rel="stylesheet" href="../css/footer.css" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.form/3.51/jquery.form.min.js"></script>
+    <script src="../javascripts/common.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <header>
+      <nav>
+        <div class="flex-start">
+          <div id="logo-stylish">
+            <a href="/">
+              <img
+                src="../images/logo.png"
+                alt="STYLiSH Logo"
+                width="258"
+                height="48"
+              />
+            </a>
+          </div>
+          <div class="nav-categories">
+            <h3>女 裝</h3>
+            <hr class="category-break" />
+            <h3>男 裝</h3>
+            <hr class="category-break" />
+            <h3>配 件</h3>
+          </div>
+        </div>
+
+        <div class="flex-end">
+          <div><input id="search" /></div>
+          <div>
+            <a href="/cart.html">
+              <div class="icon-cart">
+                <div class="count">0</div>
+              </div>
+            </a>
+          </div>
+          <div>
+            <a href="/profile.html"><div class="icon-profile"></div></a>
+          </div>
+        </div>
+      </nav>
+
+      <div class="flex-center-grey"></div>
+    </header>
+
+    <main>
+      <div class="flex-center">
+        <section class="content" id="content-detail"></section>
+      </div>
+    </main>
+
+    <footer>
+      <nav>
+        <ul>
+          <div>關於 Stylish</div>
+          <div>服務條款</div>
+          <div>隱私政策</div>
+          <div>聯絡我們</div>
+          <div>FAQ</div>
+        </ul>
+      </nav>
+      <div class="links">
+        <img src="./images/line.png" />
+        <img src="./images/twitter.png" />
+        <img src="./images/facebook.png" />
+      </div>
+      <div class="rights">© 2021. All rights reserved.</div>
+    </footer>
+  </body>
+
+  <script>
+    updateCartQty();
+    let query = window.location.search;
+    let id = parseInt(query.slice(query.lastIndexOf("=") + 1));
+
+    $.ajax({
+      type: "GET",
+      url: `/api/1.0/products/details?id=${id}`,
+      success: function (r) {
+        let json = JSON.parse(r);
+        let product = json.data;
+        let section = document.querySelector(`#content-detail`);
+        let description = product.description.replace(/ /g, "<br>");
+        let productDetail = `<div id="product">
+            <img
+              class="product__main-image"
+              src="/pics/${product.main_image}.jpg"
+            />
+            <div class="product__detail">
+              <div class="product__title">${product.title}</div>
+              <div class="product__id">${product.id}</div>
+              <div class="product__price">TWD.${product.price}</div>
+              <div class="product__variants">
+                <div class="product__variant">
+                  <div class="product__variant-name">顏色｜</div>
+                  <div class="product__colors" id="colors">
+                  </div>
+                </div>
+                <div class="product__variant">
+                  <div class="product__variant-name">尺寸｜</div>
+                  <div class="product__sizes" id="sizes">
+                  </div>
+                </div>
+                <div class="product__variant">
+                  <div class="product__variant-name">數量｜</div>
+                  <div class="product__quantity">
+                    <button id="decrement">-</button>
+                    <div id="quantity">1</div>
+                    <button id="increment">+</button>
+                  </div>
+                </div>
+              </div>
+              <button id="add-to-cart">加入購物車</button>
+              <div class="product__note">實品顏色依單品照為主</div>
+              <div class="product__texture">${product.texture}</div>
+              <div class="product__description">${description}</div>
+              <div class="product__wash">清洗：${product.wash}</div>
+              <div class="product__place">產地：${product.place}</div>
+            </div>
+            <div class="seperator">更多產品資訊</div>
+            <div class="product__story">
+              ${product.story}
+            </div>
+            <img
+              class="product__image"
+              src="/pics/${product.images[0]}.jpg"
+            /><img
+              class="product__image"
+              src="/pics/${product.images[1]}.jpg"
+            /><img
+              class="product__image"
+              src="/pics/${product.images[2]}.jpg"
+            /><img
+              class="product__image"
+              src="/pics/${product.images[3]}.jpg"
+            />
+          </div>`;
+        section.insertAdjacentHTML("afterbegin", productDetail);
+
+        // create color div then append
+        product.colors.forEach((color) => {
+          let colors = document.querySelector(`.product__colors`);
+          let eachColor = `<div
+                      class="product__color" id=${color.code}
+                      style="background-color: #${color.code}"
+                    ></div>`;
+          colors.insertAdjacentHTML("afterbegin", eachColor);
+        });
+
+        // create size div then append
+        product.sizes.forEach((size) => {
+          let sizes = document.querySelector(`.product__sizes`);
+          let eachSize = `<div class="product__size" id=${size}>${size}</div>`;
+          sizes.insertAdjacentHTML("afterbegin", eachSize);
+        });
+
+        setDefaultVariant(product);
+        addMouseEvent(product);
+      },
+      error: function (e) {
+        console.log("some error:", e);
+      },
+    });
+
+    function setDefaultVariant(product) {
+      let productColors = document.querySelector(".product__colors");
+      productColors.firstChild.classList.add("product__color--selected");
+
+      let productSizes = document.querySelector(".product__sizes");
+      productSizes.firstChild.classList.add("product__size--selected");
+      checkVariants(product, "color");
+    }
+
+    function addMouseEvent(product) {
+      let productColors = document.querySelector(".product__colors");
+      productColors.addEventListener("mousedown", (e) => {
+        if (e.target.id !== "colors") {
+          onlySelect(
+            e.target.id,
+            e.target.className.split(" ")[0],
+            "product__color--selected",
+            "product__color--disabled"
+          );
+          checkVariants(product, "color");
+        }
+      });
+
+      let productSizes = document.querySelector(".product__sizes");
+      productSizes.addEventListener("mousedown", (e) => {
+        if (e.target.id !== "sizes") {
+          onlySelect(
+            e.target.id,
+            e.target.className.split(" ")[0],
+            "product__size--selected",
+            "product__size--disabled"
+          );
+          checkVariants(product, "size");
+        }
+      });
+
+      let incrementButton = document.querySelector("#increment");
+      incrementButton.addEventListener("mousedown", (e) => {
+        let totalStock = getStock(product);
+        alterQuantity(totalStock, "+");
+      });
+
+      let decrementButton = document.querySelector("#decrement");
+      decrementButton.addEventListener("mousedown", (e) => {
+        let totalStock = getStock(product);
+        alterQuantity(totalStock, "-");
+      });
+
+      let addToCartButton = document.querySelector("#add-to-cart");
+      addToCartButton.addEventListener("mousedown", (e) => {
+        let cartArr = localStorage.getItem("cart");
+        if (cartArr === null) {
+          cartArr = [];
+        } else {
+          cartArr = JSON.parse(cartArr);
+        }
+
+        for (let item of cartArr) {
+          let conditionId =
+            item.id ===
+            parseInt(document.querySelector(".product__id").innerHTML);
+          let conditionColor =
+            item.color ===
+            document.querySelector(".product__color--selected").id;
+          let conditionSize =
+            item.size ===
+            document.querySelector(".product__size--selected").innerHTML;
+          if (conditionId && conditionColor && conditionSize) {
+            alert("已加入購物車");
+            return;
+          }
+        }
+
+        let cartProduct = {
+          color: document.querySelector(".product__color--selected").id,
+          id: parseInt(document.querySelector(".product__id").innerHTML),
+          image: document.querySelector(".product__main-image").src,
+          name: document.querySelector(".product__title").innerHTML,
+          price: parseInt(
+            document.querySelector(".product__price").innerHTML.split(".")[1]
+          ),
+          qty: parseInt(document.querySelector("#quantity").innerHTML),
+          size: document.querySelector(".product__size--selected").innerHTML,
+          stock: getStock(product),
+        };
+
+        cartArr.push(cartProduct);
+        localStorage.setItem("cart", JSON.stringify(cartArr));
+        alert("已加入購物車");
+        updateCartQty();
+      });
+    }
+
+    function alterQuantity(totalStock, operation) {
+      let quantityElement = document.querySelector(`#quantity`);
+
+      if (operation === "+") {
+        let newQty = parseInt(quantityElement.innerHTML) + 1;
+        if (newQty <= totalStock) quantityElement.innerHTML = newQty;
+      } else if (operation === "-") {
+        let newQty = parseInt(quantityElement.innerHTML) - 1;
+        if (newQty >= 1) quantityElement.innerHTML = newQty;
+      }
+    }
+
+    function onlySelect(idName, className, selectClassName, disableClassName) {
+      let targetElement = document.querySelector(`#${idName}`);
+      if (targetElement.classList.contains(disableClassName)) return;
+
+      let elements = document.querySelectorAll(`.${className}`);
+      for (let element of elements) {
+        element.classList.remove(selectClassName);
+      }
+
+      targetElement.classList.add(selectClassName);
+    }
+
+    function getStock(product) {
+      let selectColorElement = document.querySelector(
+        `.product__color--selected`
+      );
+      let selectSizeElement = document.querySelector(
+        `.product__size--selected`
+      );
+
+      for (let variant of product.variants) {
+        if (
+          variant.color_code === selectColorElement.id &&
+          variant.size === selectSizeElement.id
+        ) {
+          return variant.stock;
+        }
+      }
+    }
+
+    function setQuantityZero() {
+      let quantityElement = document.querySelector(`#quantity`);
+      quantityElement.innerHTML = 1;
+    }
+
+    function checkVariants(product, major) {
+      setQuantityZero();
+      let selectColorElement = document.querySelector(
+        `.product__color--selected`
+      );
+      let selectSizeElement = document.querySelector(
+        `.product__size--selected`
+      );
+
+      let onlyAbleId = [];
+
+      for (let variant of product.variants) {
+        if (major === "color" && variant.color_code === selectColorElement.id) {
+          onlyAbleId.push(variant.size);
+        } else if (major === "size" && variant.size === selectSizeElement.id) {
+          onlyAbleId.push(variant.color_code);
+        }
+      }
+      disableId(onlyAbleId, major);
+    }
+
+    function disableId(onlyAbleId, major) {
+      let className = null;
+      if (major === "color") {
+        className = ".product__size";
+        selectClassName = "product__size--selected";
+        diableClassName = "product__size--disabled";
+      } else if (major === "size") {
+        className = "product__color";
+        selectClassName = "product__color--selected";
+        diableClassName = "product__color--disabled";
+      }
+
+      let needDisableElements = document.querySelectorAll(className);
+
+      for (let element of needDisableElements) {
+        element.classList.remove(selectClassName);
+        if (!onlyAbleId.includes(element.id)) {
+          element.classList.add(diableClassName);
+        } else {
+          element.classList.remove(diableClassName);
+        }
+      }
+
+      for (let element of needDisableElements) {
+        if (!element.classList.contains(diableClassName)) {
+          element.classList.add(selectClassName);
+          return;
+        }
+      }
+    }
+  </script>
+</html>
